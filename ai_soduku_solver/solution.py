@@ -112,7 +112,7 @@ def reduce_puzzle(values):
     -------
     dict or False
         The values dictionary after continued application of the constraint strategies
-        no longer produces any changes, or False if the puzzle is unsolvable 
+        no longer produces any changes, or False if the puzzle is unsolvable
     """
     # TODO: Copy your code from the classroom and modify it to complete this function
     raise NotImplementedError
@@ -148,7 +148,7 @@ def solve(grid):
     ----------
     grid(string)
         a string representing a sudoku grid.
-        
+
         Ex. '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
 
     Returns

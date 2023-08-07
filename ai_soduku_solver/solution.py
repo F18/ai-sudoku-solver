@@ -1,10 +1,9 @@
 
-from utils import *
+import utils
 
-
-row_units = [cross(r, cols) for r in rows]
-column_units = [cross(rows, c) for c in cols]
-square_units = [cross(rs, cs) for rs in ('ABC','DEF','GHI') for cs in ('123','456','789')]
+row_units = [utils.cross(r, utils.cols) for r in utils.rows]
+column_units = [utils.cross(utils.rows, c) for c in utils.cols]
+square_units = [utils.cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
 unitlist = row_units + column_units + square_units
 
 # TODO: Update the unit list to add the new diagonal units
@@ -12,8 +11,8 @@ unitlist = unitlist
 
 
 # Must be called after all units (including diagonals) are added to the unitlist
-units = extract_units(unitlist, boxes)
-peers = extract_peers(units, boxes)
+units = utils.extract_units(unitlist, utils.boxes)
+peers = utils.extract_peers(units, utils.boxes)
 
 
 def naked_twins(values):
@@ -157,22 +156,23 @@ def solve(grid):
     dict or False
         The dictionary representation of the final sudoku grid or False if no solution exists.
     """
-    values = grid2values(grid)
+    values = utils.grid2values(grid)
     values = search(values)
     return values
 
 
 if __name__ == "__main__":
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
-    display(grid2values(diag_sudoku_grid))
-    result = solve(diag_sudoku_grid)
-    display(result)
+    utils.display(utils.grid2values(diag_sudoku_grid))
+    result = utils.solve(diag_sudoku_grid)
+    utils.display(result)
 
     try:
         import PySudoku
-        PySudoku.play(grid2values(diag_sudoku_grid), result, history)
+        PySudoku.play(utils.grid2values(diag_sudoku_grid), result, utils.history)
 
-    except SystemExit:
-        pass
-    except:
-        print('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')
+    except Exception as e:
+        if type(e).__name__ == "SystemExit":
+            pass
+        else:
+            print('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')

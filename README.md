@@ -9,4 +9,4 @@ AI-driven solver for sudoku puzzles based on the first project of the Udacity ad
 
     Used throughout AI to efficiently find solutions for a wide range of problems (ex: game-playing, route planning).
 
-![./ai_sudoku_solver/images/sudoku_dfs03.png]
+    ![Depth First Search Applied to Sudoku Puzzles](https://github.com/F18/ai_sudoku_solver/blob/strategies/ai_soduku_solver/images/sudoku_dfs03.png)

@@ -56,7 +56,7 @@ def naked_twins(values):
     raise NotImplementedError
 
 
-def eliminate(values):
+def eliminate(values: dict) -> dict:
     """Apply the eliminate strategy to a Sudoku puzzle
 
     The eliminate strategy says that if a box has a value assigned, then none
@@ -73,17 +73,17 @@ def eliminate(values):
         The values dictionary with the assigned values eliminated from peers
     """
 
-    solved_boxes = [box for box in units if len(values[box]) == 1]
+    solved_boxes: list = [box for box in units if len(values[box]) == 1]
 
     for box in solved_boxes:
-        solved_value = values[box]
+        solved_value: int = values[box]
         for peer in peers[box]:
             values[peer] = values[peer].replace(solved_value, '')
 
     return values
 
 
-def only_choice(values):
+def only_choice(values: dict) -> dict:
     """Apply the only choice strategy to a Sudoku puzzle
 
     The only choice strategy says that if only one box in a unit allows a certain
@@ -107,7 +107,7 @@ def only_choice(values):
     for unit in unitlist:
         for digit in '123456789':
             # For the given digit, find all boxes that contain the digit in their values
-            dplaces = [box for box in unit if digit in values[box]]
+            dplaces: list = [box for box in unit if digit in values[box]]
             if len(dplaces) == 1:
                 # If the digit appears in only one location, then it is the only choice
                 values[dplaces[0]] = digit
@@ -115,7 +115,7 @@ def only_choice(values):
     return values
 
 
-def reduce_puzzle(values):
+def reduce_puzzle(values: dict) -> dict | bool:
     """Reduce a Sudoku puzzle by repeatedly applying all constraint strategies
 
     Parameters
@@ -129,8 +129,26 @@ def reduce_puzzle(values):
         The values dictionary after continued application of the constraint strategies
         no longer produces any changes, or False if the puzzle is unsolvable
     """
-    # TODO: Copy your code from the classroom and modify it to complete this function
-    raise NotImplementedError
+    stalled: bool = False
+    while not stalled:
+        # Check how many boxes have a determined value
+        solved_values_before: int = len([box for box in values.keys() if len(values[box]) == 1])
+
+        # Your code here: Use the Eliminate Strategy
+        values: dict = eliminate(values)
+
+        # Your code here: Use the Only Choice Strategy
+        values: dict = only_choice(values)
+
+        # Check how many boxes have a determined value, to compare
+        solved_values_after: int = len([box for box in values.keys() if len(values[box]) == 1])
+        # If no new values were added, stop the loop.
+        stalled = solved_values_before == solved_values_after
+        # Sanity check, return False if there is a box with zero available values:
+        if len([box for box in values.keys() if len(values[box]) == 0]):
+            return False
+
+    return values
 
 
 def search(values):
@@ -179,7 +197,7 @@ def solve(grid):
 if __name__ == "__main__":
     diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
     utils.display(utils.grid2values(diag_sudoku_grid))
-    result = utils.solve(diag_sudoku_grid)
+    result = solve(diag_sudoku_grid)
     utils.display(result)
 
     try:

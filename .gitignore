@@ -156,6 +156,8 @@ cython_debug/
 # vscode
 settings.json
 
+# udacity
+.udacity-pa/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can

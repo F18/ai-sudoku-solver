@@ -1,9 +1,10 @@
-
 import utils
 
 row_units = [utils.cross(r, utils.cols) for r in utils.rows]
 column_units = [utils.cross(utils.rows, c) for c in utils.cols]
-square_units = [utils.cross(rs, cs) for rs in ('ABC', 'DEF', 'GHI') for cs in ('123', '456', '789')]
+square_units = [
+    utils.cross(rs, cs) for rs in ("ABC", "DEF", "GHI") for cs in ("123", "456", "789")
+]
 unitlist = row_units + column_units + square_units
 
 # TODO: Update the unit list to add the new diagonal units
@@ -72,8 +73,15 @@ def eliminate(values):
     dict
         The values dictionary with the assigned values eliminated from peers
     """
-    # TODO: Copy your code from the classroom to complete this function
-    raise NotImplementedError
+
+    solved_boxes = [box for box in units if len(values[box]) == 1]
+
+    for box in solved_boxes:
+        solved_value = values[box]
+        for peer in peers[box]:
+            values[peer] = values[peer].replace(solved_value, "")
+
+    return values
 
 
 def only_choice(values):
@@ -162,17 +170,20 @@ def solve(grid):
 
 
 if __name__ == "__main__":
-    diag_sudoku_grid = '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
+    diag_sudoku_grid = "2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3"
     utils.display(utils.grid2values(diag_sudoku_grid))
     result = utils.solve(diag_sudoku_grid)
     utils.display(result)
 
     try:
         import PySudoku
+
         PySudoku.play(utils.grid2values(diag_sudoku_grid), result, utils.history)
 
     except Exception as e:
         if type(e).__name__ == "SystemExit":
             pass
         else:
-            print('We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement.')
+            print(
+                "We could not visualize your board due to a pygame issue. Not a problem! It is not a requirement."
+            )

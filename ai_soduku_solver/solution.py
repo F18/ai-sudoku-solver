@@ -36,25 +36,23 @@ def naked_twins(values):
 
     Notes
     -----
-    Your solution can either process all pairs of naked twins from the input once,
-    or it can continue processing pairs of naked twins until there are no such
-    pairs remaining -- the project assistant test suite will accept either
-    convention. However, it will not accept code that does not process all pairs
-    of naked twins from the original input. (For example, if you start processing
-    pairs of twins and eliminate another pair of twins before the second pair
-    is processed then your code will fail the PA test suite.)
+    This solution processes all pairs of naked twins from the input once.
 
-    The first convention is preferred for consistency with the other strategies,
-    and because it is simpler (since the reduce_puzzle function already calls this
-    strategy repeatedly).
-
-    See Also
-    --------
     Pseudocode for this algorithm on github:
+
     https://github.com/udacity/artificial-intelligence/blob/master/Projects/1_Sudoku/pseudocode.md
     """
-    # TODO: Implement this function!
-    raise NotImplementedError
+
+    v_out = values.copy()
+    for box_a in values:
+        for box_b in peers[box_a]:
+            if values[box_a] == values[box_b] and len(values[box_a]) == 2:
+                intersection = [x for x in peers[box_a] if x in peers[box_b]]
+                for peer in intersection:
+                    for digit in values[box_a]:
+                        v_out[peer] = v_out[peer].replace(digit, "")
+
+    return v_out
 
 
 def eliminate(values: dict) -> dict:

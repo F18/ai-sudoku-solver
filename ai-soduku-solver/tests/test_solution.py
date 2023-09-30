@@ -8,6 +8,7 @@ import solution
 
 
 class TestEliminate(unittest.TestCase):
+
     before_eliminate = {
         "A1": "123456789",
         "A2": "123456789",
@@ -176,9 +177,12 @@ class TestEliminate(unittest.TestCase):
         "I9": "2467",
     }
 
+    unitlist = solution.get_unitlist()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_eliminate(self):
         self.assertEqual(
-            solution.eliminate(self.before_eliminate),
+            solution.eliminate(self.before_eliminate, self.units, self.peers),
             self.after_eliminate,
             "Your eliminate function produced an unexpected board.",
         )
@@ -352,8 +356,11 @@ class TestOnlyChoice(unittest.TestCase):
         "D1": "345",
     }
 
+    unitlist = solution.get_unitlist()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_only_choice(self):
-        a = solution.only_choice(self.before_only_choice)
+        a = solution.only_choice(self.before_only_choice, self.unitlist)
         b = self.after_only_choice
         self.assertEqual(
             a,
@@ -530,8 +537,11 @@ class TestReducePuzzle(unittest.TestCase):
         "D1": "5",
     }
 
+    unitlist = solution.get_unitlist()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_reduce_puzzle(self):
-        a = solution.reduce_puzzle(self.before_reduce)
+        a = solution.reduce_puzzle(self.before_reduce, self.unitlist, self.units, self.peers)
         b = self.after_reduce
         self.assertEqual(
             a,
@@ -708,8 +718,11 @@ class TestSearch(unittest.TestCase):
         "D1": "8",
     }
 
+    unitlist = solution.get_unitlist()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_search(self):
-        a = solution.search(self.before_search)
+        a = solution.search(self.before_search, self.unitlist, self.units, self.peers)
         b = self.after_search
         self.assertEqual(
             a,
@@ -1223,16 +1236,19 @@ class TestNakedTwins(unittest.TestCase):
         },
     ]
 
+    unitlist = solution.get_unitlist_with_diagonal()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_naked_twins(self):
         self.assertTrue(
-            solution.naked_twins(self.before_naked_twins_1)
+            solution.naked_twins(self.before_naked_twins_1, self.peers)
             in self.possible_solutions_1,
             "Your naked_twins function produced an unexpected board.",
         )
 
     def test_naked_twins2(self):
         self.assertTrue(
-            solution.naked_twins(self.before_naked_twins_2)
+            solution.naked_twins(self.before_naked_twins_2, self.peers)
             in self.possible_solutions_2,
             "Your naked_twins function produced an unexpected board.",
         )
@@ -1324,8 +1340,14 @@ class TestDiagonalSudoku(unittest.TestCase):
         "D1": "5",
     }
 
+    unitlist = solution.get_unitlist_with_diagonal()
+    units, peers = solution.get_units_and_peers(unitlist)
+
     def test_solve(self):
-        self.assertEqual(solution.solve(self.diagonal_grid), self.solved_diag_sudoku)
+        self.assertEqual(
+            solution.solve(self.diagonal_grid, self.unitlist, self.units, self.peers),
+            self.solved_diag_sudoku
+            )
 
 
 if __name__ == "__main__":

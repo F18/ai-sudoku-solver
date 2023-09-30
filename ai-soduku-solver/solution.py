@@ -1,61 +1,39 @@
 import utils
 
-row_units = [utils.cross(r, utils.cols) for r in utils.rows]
-column_units = [utils.cross(utils.rows, c) for c in utils.cols]
-square_units = [
-    utils.cross(rs, cs) for rs in ("ABC", "DEF", "GHI") for cs in ("123", "456", "789")
-]
-unitlist = row_units + column_units + square_units
 
-# TODO: Update the unit list to add the new diagonal units
-unitlist = unitlist
+def get_unitlist():
+    row_units = [utils.cross(r, utils.cols) for r in utils.rows]
+    column_units = [utils.cross(utils.rows, c) for c in utils.cols]
+    square_units = [
+        utils.cross(rs, cs)
+        for rs in ("ABC", "DEF", "GHI")
+        for cs in ("123", "456", "789")
+    ]
 
+    unitlist = row_units + column_units + square_units
 
-# Must be called after all units (including diagonals) are added to the unitlist
-units = utils.extract_units(unitlist, utils.boxes)
-peers = utils.extract_peers(units, utils.boxes)
-
-
-def naked_twins(values):
-    """Eliminate values using the naked twins strategy.
-
-    The naked twins strategy says that if you have two or more unallocated boxes
-    in a unit and there are only two digits that can go in those two boxes, then
-    those two digits can be eliminated from the possible assignments of all other
-    boxes in the same unit.
-
-    Parameters
-    ----------
-    values(dict)
-        a dictionary of the form {'box_name': '123456789', ...}
-
-    Returns
-    -------
-    dict
-        The values dictionary with the naked twins eliminated from peers
-
-    Notes
-    -----
-    This solution processes all pairs of naked twins from the input once.
-
-    Pseudocode for this algorithm on github:
-
-    https://github.com/udacity/artificial-intelligence/blob/master/Projects/1_Sudoku/pseudocode.md
-    """
-
-    v_out = values.copy()
-    for box_a in values:
-        for box_b in peers[box_a]:
-            if values[box_a] == values[box_b] and len(values[box_a]) == 2:
-                intersection = [x for x in peers[box_a] if x in peers[box_b]]
-                for peer in intersection:
-                    for digit in values[box_a]:
-                        v_out[peer] = v_out[peer].replace(digit, "")
-
-    return v_out
+    return unitlist
 
 
-def eliminate(values: dict) -> dict:
+def get_unitlist_with_diagonal():
+    unitlist = get_unitlist()
+
+    diagonal_1 = [[c1 + c2 for c1, c2 in zip("ABCDEFGHI", "123456789")]]
+    diagonal_2 = [[c1 + c2 for c1, c2 in zip("ABCDEFGHI", "987654321")]]
+
+    unitlist += diagonal_1 + diagonal_2
+
+    return unitlist
+
+
+def get_units_and_peers(unitlist):
+    units = utils.extract_units(unitlist, utils.boxes)
+    peers = utils.extract_peers(units, utils.boxes)
+
+    return units, peers
+
+
+def eliminate(values: dict, units, peers) -> dict:
     """Apply the eliminate strategy to a Sudoku puzzle
 
     The eliminate strategy says that if a box has a value assigned, then none
@@ -65,13 +43,19 @@ def eliminate(values: dict) -> dict:
     ----------
     values(dict)
         a dictionary of the form {'box_name': '123456789', ...}
+    units(dict)
+        a dictionary with a key for each box (string) whose value is a list
+        containing the units that the box belongs to (i.e., the "member units")
+    peers(dict)
+        a dictionary with a key for each box (string) whose value is a set
+        containing all boxes that are peers of the key box (boxes that are in a unit
+        together with the key box)
 
     Returns
     -------
     dict
         The values dictionary with the assigned values eliminated from peers
     """
-
     solved_boxes: list = [box for box in units if len(values[box]) == 1]
 
     for box in solved_boxes:
@@ -82,7 +66,7 @@ def eliminate(values: dict) -> dict:
     return values
 
 
-def only_choice(values: dict) -> dict:
+def only_choice(values: dict, unitlist) -> dict:
     """Apply the only choice strategy to a Sudoku puzzle
 
     The only choice strategy says that if only one box in a unit allows a certain
@@ -92,6 +76,8 @@ def only_choice(values: dict) -> dict:
     ----------
     values(dict)
         a dictionary of the form {'box_name': '123456789', ...}
+    unitlist(list)
+        a list of dictionaries containing all of the units in puzzle
 
     Returns
     -------
@@ -114,13 +100,22 @@ def only_choice(values: dict) -> dict:
     return values
 
 
-def reduce_puzzle(values: dict) -> dict | bool:
+def reduce_puzzle(values: dict, unitlist, units, peers) -> dict | bool:
     """Reduce a Sudoku puzzle by repeatedly applying all constraint strategies
 
     Parameters
     ----------
     values(dict)
         a dictionary of the form {'box_name': '123456789', ...}
+    unitlist(list)
+        a list of dictionaries containing all of the units in puzzle
+    units(dict)
+        a dictionary with a key for each box (string) whose value is a list
+        containing the units that the box belongs to (i.e., the "member units")
+    peers(dict)
+        a dictionary with a key for each box (string) whose value is a set
+        containing all boxes that are peers of the key box (boxes that are in a unit
+        together with the key box)
 
     Returns
     -------
@@ -136,10 +131,10 @@ def reduce_puzzle(values: dict) -> dict | bool:
         )
 
         # Your code here: Use the Eliminate Strategy
-        values = eliminate(values)
+        values = eliminate(values, units, peers)
 
         # Your code here: Use the Only Choice Strategy
-        values = only_choice(values)
+        values = only_choice(values, unitlist)
 
         # Check how many boxes have a determined value, to compare
         solved_values_after: int = len(
@@ -154,7 +149,7 @@ def reduce_puzzle(values: dict) -> dict | bool:
     return values
 
 
-def search(values: dict) -> dict | bool:
+def search(values: dict, unitlist, units, peers) -> dict | bool:
     """Apply depth first search to solve Sudoku puzzles in order to solve puzzles
     that cannot be solved by repeated reduction alone.
 
@@ -162,6 +157,15 @@ def search(values: dict) -> dict | bool:
     ----------
     values(dict)
         a dictionary of the form {'box_name': '123456789', ...}
+    unitlist(list)
+        a list of dictionaries containing all of the units in puzzle
+    units(dict)
+        a dictionary with a key for each box (string) whose value is a list
+        containing the units that the box belongs to (i.e., the "member units")
+    peers(dict)
+        a dictionary with a key for each box (string) whose value is a set
+        containing all boxes that are peers of the key box (boxes that are in a unit
+        together with the key box)
 
     Returns
     -------
@@ -175,7 +179,7 @@ def search(values: dict) -> dict | bool:
     """
 
     # First, reduce the puzzle using the previous function
-    reduced_values = reduce_puzzle(values)
+    reduced_values = reduce_puzzle(values, unitlist, units, peers)
 
     # Return Statements
     # -----------------
@@ -201,12 +205,56 @@ def search(values: dict) -> dict | bool:
         new_sudoku[s] = value
         # Recursive call:
         # --------------
-        attempt = search(new_sudoku)
+        attempt = search(new_sudoku, unitlist, units, peers)
         if attempt:
             return attempt
 
 
-def solve(grid):
+def naked_twins(values, peers):
+    """Eliminate values using the naked twins strategy.
+
+    The naked twins strategy says that if you have two or more unallocated boxes
+    in a unit and there are only two digits that can go in those two boxes, then
+    those two digits can be eliminated from the possible assignments of all other
+    boxes in the same unit.
+
+    Parameters
+    ----------
+    values(dict)
+        a dictionary of the form {'box_name': '123456789', ...}
+    peers(dict)
+        a dictionary with a key for each box (string) whose value is a set
+        containing all boxes that are peers of the key box (boxes that are in a unit
+        together with the key box)
+
+    Returns
+    -------
+    dict
+        The values dictionary with the naked twins eliminated from peers
+
+    Notes
+    -----
+    This solution processes all pairs of naked twins from the input once.
+
+    Pseudocode for this algorithm on github:
+
+    https://github.com/udacity/artificial-intelligence/blob/master/Projects/1_Sudoku/pseudocode.md
+    """
+
+    v_out = values.copy()
+
+    for box_a in values:
+        for box_b in peers[box_a]:
+            if values[box_a] == values[box_b] and len(values[box_a]) == 2:
+                intersection = [x for x in peers[box_a] if x in peers[box_b]]
+                for peer in intersection:
+                    for digit in values[box_a]:
+                        v_out[peer] = v_out[peer].replace(digit, "")
+
+    return v_out
+
+
+def solve(grid, unitlist, units, peers):
     """Find the solution to a Sudoku puzzle using search and constraint propagation
 
     Parameters
@@ -216,20 +264,33 @@ def solve(grid):
 
         Ex. '2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3'
 
+    unitlist(list)
+        a list of dictionaries containing all of the units in puzzle
+    units(dict)
+        a dictionary with a key for each box (string) whose value is a list
+        containing the units that the box belongs to (i.e., the "member units")
+    peers(dict)
+        a dictionary with a key for each box (string) whose value is a set
+        containing all boxes that are peers of the key box (boxes that are in a unit
+        together with the key box)
+
     Returns
     -------
     dict or False
         The dictionary representation of the final sudoku grid or False if no solution exists.
     """
     values = utils.grid2values(grid)
-    values = search(values)
+    values = search(values, unitlist, units, peers)
     return values
 
 
 if __name__ == "__main__":
     diag_sudoku_grid = "2.............62....1....7...6..8...3...9...7...6..4...4....8....52.............3"
     utils.display(utils.grid2values(diag_sudoku_grid))
-    result = solve(diag_sudoku_grid)
+
+    unitlist = get_unitlist_with_diagonal()
+    units, peers = get_units_and_peers(unitlist)
+    result = solve(diag_sudoku_grid, unitlist, units, peers)
     utils.display(result)
 
     try:
